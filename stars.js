@@ -50,36 +50,32 @@ window.onload = () => {
         elStar.setAttribute('fill', `url(#${STAR_GRADIENT_ID})`);
 
         if (config.diffractionSpikes) {
+            const gradientId = `diffSpikeGradient`,
+                elGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+
+            elGradient.id = gradientId;
+            elGradient.setAttribute('x1',  '0');
+            elGradient.setAttribute('y1',  '0');
+            elGradient.setAttribute('x2',  '0');
+            elGradient.setAttribute('y2',  '1');
+
+            config.diffractionSpikes.colourStops.forEach(stop => {
+                const elStop = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+                elStop.setAttribute('offset', `${stop.offset}%`);
+                elStop.setAttribute('stop-color', `hsla(${stop.hue || config.hue}, 100%, ${stop.luminance}%, ${stop.alpha === undefined ? 1 : stop.alpha})`);
+                elGradient.appendChild(elStop)
+            });
+            elDefs.appendChild(elGradient);
+
             let i = 0;
             const angleBetween = 360 / config.diffractionSpikes.count;
             while (i < config.diffractionSpikes.count) {
-                const gradientId = `diffSpikeGradient_${i}`,
-                    elGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient"),
-                    elLine = document.createElementNS("http://www.w3.org/2000/svg", "line"),
-                    angleRadians = (config.diffractionSpikes.offsetAngle + i * angleBetween) * Math.PI * 2 / 360,
-                    x1 = config.width / 2,
+                const elLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                let angleDegrees = (config.diffractionSpikes.offsetAngle + i * angleBetween);
+                const x1 = config.width / 2,
                     y1 = config.height / 2,
-                    x2 = x1 + (config.width / 2) * config.diffractionSpikes.size * Math.sin(angleRadians),
-                    y2 = y1 + (config.height / 2) * config.diffractionSpikes.size * Math.cos(angleRadians),
-                    gradientX1 = x1 > x2 ? 1 : 0,
-                    gradientY1 = y1 > y2 ? 1 : 0,
-                    gradientX2 = x1 > x2 ? 0 : 1,
-                    gradientY2 = y1 > y2 ? 0 : 1;
-
-                console.log(gradientX1, gradientY1, gradientX2, gradientY2)
-
-                elGradient.id = gradientId;
-                elGradient.setAttribute('x1',  '' + gradientX1);
-                elGradient.setAttribute('y1',  '' + gradientY1);
-                elGradient.setAttribute('x2',  '' + gradientX2);
-                elGradient.setAttribute('y2',  '' + gradientY2);
-
-                config.diffractionSpikes.colourStops.forEach(stop => {
-                    const elStop = document.createElementNS("http://www.w3.org/2000/svg", "stop");
-                    elStop.setAttribute('offset', `${stop.offset}%`);
-                    elStop.setAttribute('stop-color', `hsla(${stop.hue || config.hue}, 100%, ${stop.luminance}%, ${stop.alpha === undefined ? 1 : stop.alpha})`);
-                    elGradient.appendChild(elStop)
-                });
+                    x2 = x1 + 0.001,
+                    y2 = config.height;
 
                 elLine.setAttribute('x1', '' + x1);
                 elLine.setAttribute('y1', '' + y1);
@@ -87,8 +83,19 @@ window.onload = () => {
                 elLine.setAttribute('y2', '' + y2);
                 elLine.setAttribute('stroke-width', '' + config.diffractionSpikes.width);
                 elLine.setAttribute('stroke', `url(#${gradientId})`);
+                elLine.setAttribute('transform', `rotate(${angleDegrees} ${x1} ${y1})`);
 
-                elDefs.appendChild(elGradient);
+                if (config.diffractionSpikes.rotationPeriod) {
+                    const elAnimate = document.createElementNS("http://www.w3.org/2000/svg", "animateTransform");
+                    elAnimate.setAttribute('attributeName', 'transform');
+                    elAnimate.setAttribute('attributeType', 'XML');
+                    elAnimate.setAttribute('type', 'rotate');
+                    elAnimate.setAttribute('from', `${angleDegrees} ${x1} ${y1}`);
+                    elAnimate.setAttribute('to', `${angleDegrees + 360} ${x1} ${y1}`);
+                    elAnimate.setAttribute('dur', '100s');
+                    elAnimate.setAttribute('repeatCount', 'indefinite');
+                    elLine.appendChild(elAnimate);
+                }
                 elSvg.appendChild(elLine);
                 i++;
             }
@@ -124,12 +131,13 @@ window.onload = () => {
         'backgroundColor': 'black',
         'starSize': 0.1,
         'haloSize': 0.4,
-        'hue': 200,
+        'hue': 30,
         'diffractionSpikes': {
             'count': 4,
             'offsetAngle': 45,
             'size': 0.8,
             'width': 2,
+            'rotationPeriod': 100,
             'colourStops': [
                 {'offset': 0, 'luminance': 100, alpha: 1},
                 {'offset': 20, 'luminance': 90, alpha: 1},
