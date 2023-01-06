@@ -94,19 +94,48 @@ window.onload = () => {
 
         let ri=0;
         while (ri < config.textureSpikes.count) {
-            const angle = Math.random() * Math.PI * 2,
-                length = Math.random() * (config.textureSpikes.maxLength - config.textureSpikes.minLength) + config.textureSpikes.minLength,
+            const angle = Math.random() * 360,
                 el = document.createElementNS("http://www.w3.org/2000/svg", "line"),
                 x1 = config.x,
                 y1 = config.y,
-                x2 = x1 + length * Math.sin(angle),
-                y2 = y1 + length * Math.cos(angle);
+                x2 = x1,
+                y2 = y1 + config.textureSpikes.minLength;
 
             el.setAttribute('x1',  '' + x1);
             el.setAttribute('y1',  '' + y1);
             el.setAttribute('x2',  '' + x2);
             el.setAttribute('y2',  '' + y2);
-            el.setAttribute('stroke',  `hsla(${config.hue}, 100%, ${config.textureSpikes.luminance}%, ${config.textureSpikes.alpha}`);
+            el.setAttribute('stroke',  `hsl(${config.hue}, 100%, ${config.textureSpikes.luminance}%`);
+            el.setAttribute('stroke-opacity',  `${config.textureSpikes.alpha}`);
+            el.setAttribute('transform', `rotate(${angle}, ${x1}, ${y1})`);
+            if (config.textureSpikes.rotationPeriod) {
+                const elAnimateTransform = document.createElementNS("http://www.w3.org/2000/svg", "animateTransform");
+                elAnimateTransform.setAttribute('attributeName', 'transform');
+                elAnimateTransform.setAttribute('attributeType', 'XML');
+                elAnimateTransform.setAttribute('type', 'rotate');
+                elAnimateTransform.setAttribute('from', `${angle + 360} ${x1} ${y1}`);
+                elAnimateTransform.setAttribute('to', `${angle} ${x1} ${y1}`);
+                elAnimateTransform.setAttribute('dur', `${config.textureSpikes.rotationPeriod}s`);
+                elAnimateTransform.setAttribute('repeatCount', 'indefinite');
+                el.appendChild(elAnimateTransform);
+
+                const elAnimateAlpha = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+                elAnimateAlpha.setAttribute('attributeName', 'stroke-opacity');
+                elAnimateAlpha.setAttribute('values', `${config.textureSpikes.minAlpha};${config.textureSpikes.maxAlpha};${config.textureSpikes.minAlpha}`);
+                elAnimateAlpha.setAttribute('dur', `${config.textureSpikes.alphaCyclePeriod}s`);
+                elAnimateAlpha.setAttribute('repeatCount', 'indefinite');
+                elAnimateAlpha.setAttribute('begin', `${-Math.random() * config.textureSpikes.alphaCyclePeriod}s`);
+                el.appendChild(elAnimateAlpha);
+
+                const elAnimateLength = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+                elAnimateLength.setAttribute('attributeName', 'y2');
+                elAnimateLength.setAttribute('values', `${y1 + config.textureSpikes.minLength};${y1 + config.textureSpikes.maxLength};${y1 + config.textureSpikes.minLength}`);
+                elAnimateLength.setAttribute('dur', `${config.textureSpikes.lengthCyclePeriod}s`);
+                elAnimateLength.setAttribute('repeatCount', 'indefinite');
+                elAnimateLength.setAttribute('begin', `${-Math.random() * config.textureSpikes.lengthCyclePeriod}s`);
+                el.appendChild(elAnimateLength);
+            }
+
             elSvg.appendChild(el);
             ri++;
         }
@@ -157,15 +186,21 @@ window.onload = () => {
             ],
             'textureSpikes': {
                 'count': 100,
-                'minLength': size*3,
+                'minLength': size*2,
                 'maxLength': size*4,
                 'luminance': 100,
-                'alpha': 0.03
+                'minAlpha': 0.03,
+                'maxAlpha': 0.05,
+                'rotationPeriod': 200,
+                'alphaCyclePeriod': 5,
+                'lengthCyclePeriod': 3
             }
         });
     }
     // for (let i=0; i<1; i++) {
     //     createStarSimple('' + i, Math.random() * 5 + 2, Math.round(Math.random() * 360), Math.random() * 400, Math.random() * 400);
     // }
+    createStarSimple('2', 10    , 20, 100, 150);
+    createStarSimple('3', 20    , 50, 300, 80);
     createStarSimple('1', 30    , 200, 200, 200);
 };
