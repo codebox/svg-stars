@@ -1,9 +1,7 @@
 window.onload = () => {
-    function createStar(elParent, id, config) {
-        const STAR_GRADIENT_ID = 'starGradient',
-            HALO_GRADIENT_ID = 'haloGradient';
-        const elSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-
+    function createStar(elSvg, id, config) {
+        const STAR_GRADIENT_ID = `starGradient_${id}`,
+            HALO_GRADIENT_ID = `haloGradient_${id}`;
         const elDefs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
         elSvg.appendChild(elDefs);
 
@@ -27,30 +25,23 @@ window.onload = () => {
         });
         elDefs.appendChild(elHaloGradient);
 
-        elSvg.setAttribute('style', `background-color: ${config.backgroundColor}`);
-        elSvg.setAttribute('width', config.width);
-        elSvg.setAttribute('height', config.height);
-        elSvg.id = id;
+        const elHalo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 
-        const elHalo = document.createElementNS("http://www.w3.org/2000/svg", "circle"),
-            haloRadius = config.haloSize * Math.min(config.width, config.height) / 2;
-
-        elHalo.setAttribute('cx', "" + config.width/2);
-        elHalo.setAttribute('cy', "" + config.height/2);
-        elHalo.setAttribute('r', "" + haloRadius);
+        elHalo.setAttribute('cx', "" + config.x);
+        elHalo.setAttribute('cy', "" + config.y);
+        elHalo.setAttribute('r', "" + config.haloSize);
         elHalo.setAttribute('fill', `url(#${HALO_GRADIENT_ID})`);
         elSvg.appendChild(elHalo);
 
-        const elStar = document.createElementNS("http://www.w3.org/2000/svg", "circle"),
-            circleRadius = config.starSize * Math.min(config.width, config.height) / 2;
+        const elStar = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 
-        elStar.setAttribute('cx', "" + config.width/2);
-        elStar.setAttribute('cy', "" + config.height/2);
-        elStar.setAttribute('r', "" + circleRadius);
+        elStar.setAttribute('cx', "" + config.x);
+        elStar.setAttribute('cy', "" + config.y);
+        elStar.setAttribute('r', "" + config.starSize);
         elStar.setAttribute('fill', `url(#${STAR_GRADIENT_ID})`);
 
         if (config.diffractionSpikes) {
-            const gradientId = `diffSpikeGradient`,
+            const gradientId = `diffSpikeGradient_${id}`,
                 elGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
 
             elGradient.id = gradientId;
@@ -72,10 +63,10 @@ window.onload = () => {
             while (i < config.diffractionSpikes.count) {
                 const elLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
                 let angleDegrees = (config.diffractionSpikes.offsetAngle + i * angleBetween);
-                const x1 = config.width / 2,
-                    y1 = config.height / 2,
+                const x1 = config.x,
+                    y1 = config.y,
                     x2 = x1 + 0.001,
-                    y2 = config.height;
+                    y2 = y1 + config.diffractionSpikes.size;
 
                 elLine.setAttribute('x1', '' + x1);
                 elLine.setAttribute('y1', '' + y1);
@@ -92,7 +83,7 @@ window.onload = () => {
                     elAnimate.setAttribute('type', 'rotate');
                     elAnimate.setAttribute('from', `${angleDegrees} ${x1} ${y1}`);
                     elAnimate.setAttribute('to', `${angleDegrees + 360} ${x1} ${y1}`);
-                    elAnimate.setAttribute('dur', '100s');
+                    elAnimate.setAttribute('dur', `${config.diffractionSpikes.rotationPeriod}s`);
                     elAnimate.setAttribute('repeatCount', 'indefinite');
                     elLine.appendChild(elAnimate);
                 }
@@ -106,10 +97,10 @@ window.onload = () => {
             const angle = Math.random() * Math.PI * 2,
                 length = Math.random() * (config.textureSpikes.maxLength - config.textureSpikes.minLength) + config.textureSpikes.minLength,
                 el = document.createElementNS("http://www.w3.org/2000/svg", "line"),
-                x1 = config.width / 2,
-                y1 = config.height / 2,
-                x2 = x1 + (config.width / 2) * length * Math.sin(angle),
-                y2 = y1 + (config.height / 2) * length * Math.cos(angle);
+                x1 = config.x,
+                y1 = config.y,
+                x2 = x1 + length * Math.sin(angle),
+                y2 = y1 + length * Math.cos(angle);
 
             el.setAttribute('x1',  '' + x1);
             el.setAttribute('y1',  '' + y1);
@@ -120,59 +111,61 @@ window.onload = () => {
             ri++;
         }
         elSvg.appendChild(elStar);
-
-        elParent.appendChild(elSvg);
-        return elSvg;
     }
 
-    createStar(document.body, 'svg1', {
-        'width': 400,
-        'height': 400,
-        'backgroundColor': 'black',
-        'starSize': 0.1,
-        'haloSize': 0.4,
-        'hue': 30,
-        'diffractionSpikes': {
-            'count': 4,
-            'offsetAngle': 45,
-            'size': 0.8,
-            'width': 2,
-            'rotationPeriod': 100,
-            'colourStops': [
-                {'offset': 0, 'luminance': 100, alpha: 1},
-                {'offset': 20, 'luminance': 90, alpha: 1},
-                {'offset': 24, 'luminance': 80, alpha: 1, hue: 360},
-                {'offset': 28, 'luminance': 80, alpha: 0.9, hue: 120},
-                {'offset': 32, 'luminance': 80, alpha: 0.8, hue: 360},
-                {'offset': 36, 'luminance': 80, alpha: 0.7, hue: 120},
-                {'offset': 40, 'luminance': 80, alpha: 0.6, hue: 360},
-                {'offset': 44, 'luminance': 80, alpha: 0.5, hue: 120},
-                {'offset': 48, 'luminance': 100, alpha: 0.5},
-                {'offset': 100, 'luminance': 60, alpha: 0}
-            ]
-        },
-        'starColourStops': [
-            {'offset': 0, 'luminance': 100},
-            {'offset': 100, 'luminance': 90}
-        ],
-        'haloColourStops': [
-            {'offset': 0, 'luminance': 100, alpha: 0},
-            {'offset': 24, 'luminance': 100, alpha: 0},
-            {'offset': 25, 'luminance': 100, alpha: 1},
+    const svg = document.getElementById('svg')
+    function createStarSimple(id, size, hue, x, y) {
+        createStar(svg, id, {
+            'x': x,
+            'y': y,
+            'starSize': size,
+            'haloSize': size * 4,
+            'hue': hue,
+            'diffractionSpikes': {
+                'count': 4,
+                'offsetAngle': 45,
+                'size': size * 8,
+                'width': 1,
+                'rotationPeriod': 100,
+                'colourStops': [
+                    {'offset': 0, 'luminance': 100, alpha: 1},
+                    {'offset': 20, 'luminance': 90, alpha: 1},
+                    {'offset': 24, 'luminance': 80, alpha: 1, hue: 360},
+                    {'offset': 28, 'luminance': 80, alpha: 0.9, hue: 120},
+                    {'offset': 32, 'luminance': 80, alpha: 0.8, hue: 360},
+                    {'offset': 36, 'luminance': 80, alpha: 0.7, hue: 120},
+                    {'offset': 40, 'luminance': 80, alpha: 0.6, hue: 360},
+                    {'offset': 44, 'luminance': 80, alpha: 0.5, hue: 120},
+                    {'offset': 48, 'luminance': 100, alpha: 0.5},
+                    {'offset': 100, 'luminance': 60, alpha: 0}
+                ]
+            },
+            'starColourStops': [
+                {'offset': 0, 'luminance': 100},
+                {'offset': 100, 'luminance': 90}
+            ],
+            'haloColourStops': [
+                {'offset': 0, 'luminance': 100, alpha: 0},
+                {'offset': 24, 'luminance': 100, alpha: 0},
+                {'offset': 25, 'luminance': 100, alpha: 1},
 
-            {'offset': 30, 'luminance': 50, alpha: 0.9},
-            {'offset': 40, 'luminance': 50, alpha: 0},
+                {'offset': 30, 'luminance': 50, alpha: 0.9},
+                {'offset': 40, 'luminance': 50, alpha: 0},
 
-            {'offset': 65, 'luminance': 50, alpha: 0.2},
-            {'offset': 100, 'luminance': 50, alpha: 0},
-        ],
-        'textureSpikes': {
-            'count': 100,
-            'minLength': 0.3,
-            'maxLength': 0.4,
-            'luminance': 100,
-            'alpha': 0.03
-        }
-    })
-
+                {'offset': 65, 'luminance': 50, alpha: 0.2},
+                {'offset': 100, 'luminance': 50, alpha: 0},
+            ],
+            'textureSpikes': {
+                'count': 100,
+                'minLength': size*3,
+                'maxLength': size*4,
+                'luminance': 100,
+                'alpha': 0.03
+            }
+        });
+    }
+    // for (let i=0; i<1; i++) {
+    //     createStarSimple('' + i, Math.random() * 5 + 2, Math.round(Math.random() * 360), Math.random() * 400, Math.random() * 400);
+    // }
+    createStarSimple('1', 30    , 200, 200, 200);
 };
