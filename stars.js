@@ -1,5 +1,9 @@
 window.onload = () => {
     function createStar(elSvg, id, config) {
+        function adjustLightness(lightness) {
+            const range = (100 - config.lightness) * 2;
+            return (100 - range) + range * lightness / 100;
+        }
         const STAR_GRADIENT_ID = `starGradient_${id}`,
             HALO_GRADIENT_ID = `haloGradient_${id}`;
         const elDefs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
@@ -10,7 +14,7 @@ window.onload = () => {
         config.starColourStops.forEach(stop => {
             const elStop = document.createElementNS("http://www.w3.org/2000/svg", "stop");
             elStop.setAttribute('offset', `${stop.offset}%`);
-            elStop.setAttribute('stop-color', `hsla(${config.hue}, 100%, ${stop.luminance}%, ${stop.alpha === undefined ? 1 : stop.alpha})`);
+            elStop.setAttribute('stop-color', `hsla(${config.hue}, 100%, ${adjustLightness(stop.luminance)}%, ${stop.alpha === undefined ? 1 : stop.alpha})`);
             elStarGradient.appendChild(elStop)
         });
         elDefs.appendChild(elStarGradient);
@@ -20,7 +24,7 @@ window.onload = () => {
         config.haloColourStops.forEach(stop => {
             const elStop = document.createElementNS("http://www.w3.org/2000/svg", "stop");
             elStop.setAttribute('offset', `${stop.offset}%`);
-            elStop.setAttribute('stop-color', `hsla(${config.hue}, 100%, ${stop.luminance}%, ${stop.alpha === undefined ? 1 : stop.alpha})`);
+            elStop.setAttribute('stop-color', `hsla(${config.hue}, 100%, ${adjustLightness(stop.luminance)}%, ${stop.alpha === undefined ? 1 : stop.alpha})`);
             elHaloGradient.appendChild(elStop)
         });
         elDefs.appendChild(elHaloGradient);
@@ -105,7 +109,7 @@ window.onload = () => {
             el.setAttribute('y1',  '' + y1);
             el.setAttribute('x2',  '' + x2);
             el.setAttribute('y2',  '' + y2);
-            el.setAttribute('stroke',  `hsl(${config.hue}, 100%, ${config.textureSpikes.luminance}%`);
+            el.setAttribute('stroke',  `hsl(${config.hue}, 100%, ${adjustLightness(config.textureSpikes.luminance)}%`);
             el.setAttribute('stroke-opacity',  `${config.textureSpikes.alpha}`);
             el.setAttribute('transform', `rotate(${angle}, ${x1}, ${y1})`);
             if (config.textureSpikes.rotationPeriod) {
@@ -143,19 +147,20 @@ window.onload = () => {
     }
 
     const svg = document.getElementById('svg')
-    function createStarSimple(id, size, hue, x, y) {
+    function createStarSimple(id, size, hue, lightness, x, y) {
         createStar(svg, id, {
             'x': x,
             'y': y,
             'starSize': size,
             'haloSize': size * 4,
             'hue': hue,
+            'lightness': lightness,
             'diffractionSpikes': {
                 'count': 4,
                 'offsetAngle': 45,
                 'size': size * 8,
                 'width': 1,
-                'rotationPeriod': 100,
+                'rotationPeriod': 200,
                 'colourStops': [
                     {'offset': 0, 'luminance': 100, alpha: 1},
                     {'offset': 20, 'luminance': 90, alpha: 1},
@@ -171,7 +176,7 @@ window.onload = () => {
             },
             'starColourStops': [
                 {'offset': 0, 'luminance': 100},
-                {'offset': 100, 'luminance': 90}
+                {'offset': 100, 'luminance': 75}
             ],
             'haloColourStops': [
                 {'offset': 0, 'luminance': 100, alpha: 0},
@@ -186,21 +191,26 @@ window.onload = () => {
             ],
             'textureSpikes': {
                 'count': 100,
-                'minLength': size*2,
+                'minLength': size*3,
                 'maxLength': size*4,
                 'luminance': 100,
-                'minAlpha': 0.03,
-                'maxAlpha': 0.05,
+                'minAlpha': 0.02,
+                'maxAlpha': 0.04,
                 'rotationPeriod': 200,
                 'alphaCyclePeriod': 5,
                 'lengthCyclePeriod': 3
             }
         });
     }
-    // for (let i=0; i<1; i++) {
-    //     createStarSimple('' + i, Math.random() * 5 + 2, Math.round(Math.random() * 360), Math.random() * 400, Math.random() * 400);
+    // for (let i=0; i<20; i++) {
+    //     createStarSimple('' + i, Math.random() * 10 + 10, Math.round(Math.random() * 360), Math.random() * 400, Math.random() * 400);
     // }
-    createStarSimple('2', 10    , 20, 100, 150);
-    createStarSimple('3', 20    , 50, 300, 80);
-    createStarSimple('1', 30    , 200, 200, 200);
+
+    // for (let h =0; h<360; h+=10) {
+    //     createStarSimple('' + h, 10    , h, 50, 100 + (h % 60) * 10, 100 + Math.floor(h / 60) * 100);
+    // }
+
+    for (let l =0; l <= 50; l+=2) {
+        createStarSimple('' + l, 10    , 200, l+50, 100 + (l % 10) * 50, 100 + Math.floor(l / 10) * 100);
+    }
 };
