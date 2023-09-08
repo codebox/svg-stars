@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stars</title>
+    <style>
+        #download {
+            cursor: pointer;
+            text-decoration: underline;
+            line-height: 2em;
+        }
+        form {
+            margin-bottom: 1em;
+        }
+        form label {
+            display: inline-block;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Star Editor</h1>
+    <form>
+        <div>
+            <label for="size">Size</label>
+            <input type="range" id="size" min="10" max="200" />
+        </div>
+        <div>
+            <label for="hue">Hue</label>
+            <input type="range" id="hue" min="0" max="360" />
+        </div>
+        <div>
+            <label for="lightness">Lightness</label>
+            <input type="range" id="lightness" min="50" max="100" />
+        </div>
+        <div>
+            <label for="diffractionSpikeCount">Diffraction Spike Count</label>
+            <input type="range" id="diffractionSpikeCount" min="2" max="12" />
+        </div>
+        <div>
+            <label for="diffractionSpikeLength">Diffraction Spike Length</label>
+            <input type="range" id="diffractionSpikeLength" min="1" max="12" />
+        </div>
+        <div>
+            <label for="diffractionSpikeWidth">Diffraction Spike Width</label>
+            <input type="range" id="diffractionSpikeWidth" min="1" max="6" />
+        </div>
+        <div>
+            <label for="rotationPeriod">Rotation Period</label>
+            <input type="range" id="rotationPeriod" min="20" max="500" step="10" />
+        </div>
+        <a id="download">Download SVG</a>
+    </form>
+    <svg id="svg" width="800" height="800" style="background-color: black" xmlns="http://www.w3.org/2000/svg"></svg>
+    <script src="stars.js"></script>
+    <script src="editor.js"></script>
+</body>
+</html>
